@@ -58,23 +58,23 @@
 
   .header {
     text-align: center;
-    padding: 24px 16px 18px;
+    padding: 0 0 18px;
     border-bottom: 4px solid #ff0;
     background: #000;
   }
 
-  .header-title {
-    font-size: 16px;
-    color: #ff0;
-    text-shadow: 0 0 18px #ff0, 2px 2px 0 #a80;
-    letter-spacing: 2px;
-    line-height: 1.7;
+  .header-hero {
+    width: 100%;
+    display: block;
+    max-height: 220px;
+    object-fit: cover;
+    object-position: center top;
   }
 
   .header-sub {
     font-size: 7px;
     color: #0ff;
-    margin-top: 10px;
+    margin-top: 14px;
     letter-spacing: 1px;
     text-shadow: 0 0 8px #0ff;
   }
@@ -344,7 +344,7 @@
 </div>
 
 <div class="header">
-  <div class="header-title">☆ SUMMER ARCADE<br>CHALLENGE ☆</div>
+  <img src="header.png" alt="Summer Arcade Challenge '95" class="header-hero">
   <div class="header-sub">COMPLETE 15 LEGENDARY MISSIONS</div>
   <div class="progress-bar-wrap">
     <div class="progress-label">
