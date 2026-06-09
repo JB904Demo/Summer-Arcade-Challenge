@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<title>Summer Arcade Challenge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: #000;
+    font-family: 'Press Start 2P', monospace;
+    color: #fff;
+    min-height: 100vh;
+    padding-bottom: 40px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .scanlines {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.12) 2px,
+      rgba(0,0,0,0.12) 4px
+    );
+    pointer-events: none;
+    z-index: 1000;
+  }
+
+  .ticker {
+    background: #000;
+    border-top: 2px solid #ff0;
+    border-bottom: 2px solid #ff0;
+    padding: 7px 0;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .ticker-inner {
+    display: inline-block;
+    animation: ticker 26s linear infinite;
+    font-size: 8px;
+    color: #ff0;
+    letter-spacing: 2px;
+  }
+
+  @keyframes ticker {
+    0%   { transform: translateX(100vw); }
+    100% { transform: translateX(-100%); }
+  }
+
+  .header {
+    text-align: center;
+    padding: 24px 16px 18px;
+    border-bottom: 4px solid #ff0;
+    background: #000;
+  }
+
+  .header-title {
+    font-size: 16px;
+    color: #ff0;
+    text-shadow: 0 0 18px #ff0, 2px 2px 0 #a80;
+    letter-spacing: 2px;
+    line-height: 1.7;
+  }
+
+  .header-sub {
+    font-size: 7px;
+    color: #0ff;
+    margin-top: 10px;
+    letter-spacing: 1px;
+    text-shadow: 0 0 8px #0ff;
+  }
+
+  .progress-bar-wrap {
+    margin: 14px auto 0;
+    max-width: 340px;
+    padding: 0 8px;
+  }
+
+  .progress-label {
+    font-size: 6px;
+    color: #0f0;
+    margin-bottom: 6px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .progress-track {
+    height: 14px;
+    background: #111;
+    border: 2px solid #0f0;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: #0f0;
+    transition: width 0.5s;
+    box-shadow: 0 0 8px #0f0;
+  }
+
+  /* Single column grid, full width on mobile */
+  .grid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 20px 12px 32px;
+    max-width: 520px;
+    margin: 0 auto;
+  }
+
+  .card {
+    background: #0a0010;
+    border: 3px solid #800080;
+    position: relative;
+    width: 100%;
+  }
+
+  .card.done {
+    border-color: #0f0;
+    background: #001400;
+  }
+
+  .card-header {
+    background: #1a001a;
+    padding: 10px 12px 8px;
+    border-bottom: 2px solid #800080;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .card.done .card-header {
+    background: #002800;
+    border-bottom-color: #0f0;
+  }
+
+  .game-num {
+    font-size: 7px;
+    color: #ff0;
+    min-width: 28px;
+    text-shadow: 0 0 6px #ff0;
+  }
+
+  .game-title {
+    font-size: 9px;
+    color: #fff;
+    flex: 1;
+    letter-spacing: 0.5px;
+    line-height: 1.5;
+  }
+
+  .card.done .game-title { color: #0f0; }
+
+  .year-badge {
+    font-size: 6px;
+    color: #0ff;
+    background: #001a1a;
+    border: 1px solid #0ff;
+    padding: 3px 6px;
+  }
+
+  .marquee-area {
+    width: 100%;
+    height: 110px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: #000;
+  }
+
+  .marquee-art {
+    width: 100%;
+    height: 100%;
+  }
+
+  .mission-section {
+    padding: 12px 14px;
+    border-top: 1px solid #333;
+  }
+
+  .mission-label {
+    font-size: 6px;
+    color: #ff0;
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+  }
+
+  .mission-text {
+    font-size: 7px;
+    color: #ccc;
+    line-height: 2;
+    border-left: 3px solid #800080;
+    padding-left: 10px;
+  }
+
+  .card.done .mission-text { border-left-color: #0f0; color: #0f0; }
+
+  .card-footer {
+    padding: 10px 14px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-top: 1px solid #222;
+    gap: 10px;
+  }
+
+  .complete-btn {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px;
+    padding: 10px 14px;
+    background: #000;
+    border: 2px solid #800080;
+    color: #f0f;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    min-height: 44px;
+    touch-action: manipulation;
+  }
+
+  .card.done .complete-btn {
+    border-color: #0f0;
+    color: #0f0;
+    font-size: 6px;
+  }
+
+  .done-stamp { text-align: right; }
+
+  .done-label {
+    font-size: 7px;
+    color: #0f0;
+    text-shadow: 0 0 8px #0f0;
+    display: block;
+    line-height: 1.8;
+  }
+
+  .done-date {
+    font-size: 5px;
+    color: #0a0;
+    margin-top: 4px;
+    display: block;
+  }
+
+  .corner-tl, .corner-tr, .corner-bl, .corner-br {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    z-index: 2;
+  }
+  .corner-tl { top: -1px; left: -1px; border-top: 3px solid #ff0; border-left: 3px solid #ff0; }
+  .corner-tr { top: -1px; right: -1px; border-top: 3px solid #ff0; border-right: 3px solid #ff0; }
+  .corner-bl { bottom: -1px; left: -1px; border-bottom: 3px solid #ff0; border-left: 3px solid #ff0; }
+  .corner-br { bottom: -1px; right: -1px; border-bottom: 3px solid #ff0; border-right: 3px solid #ff0; }
+  .card.done .corner-tl, .card.done .corner-tr,
+  .card.done .corner-bl, .card.done .corner-br { border-color: #0f0; }
+
+  /* Modal */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.88);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.show { display: flex; }
+
+  .modal {
+    background: #000;
+    border: 4px solid #0f0;
+    padding: 28px 22px;
+    width: 100%;
+    max-width: 360px;
+    text-align: center;
+  }
+
+  .modal-game-name {
+    font-size: 10px;
+    color: #ff0;
+    margin-bottom: 14px;
+    display: block;
+    line-height: 1.6;
+  }
+
+  .modal h2 {
+    font-size: 11px;
+    color: #0f0;
+    text-shadow: 0 0 15px #0f0;
+    margin-bottom: 14px;
+    line-height: 1.7;
+  }
+
+  .modal p {
+    font-size: 7px;
+    color: #ccc;
+    line-height: 2;
+    margin-bottom: 22px;
+  }
+
+  .modal-btns {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+  }
+
+  .modal-btn {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 8px;
+    padding: 12px 18px;
+    border: 2px solid;
+    cursor: pointer;
+    background: #000;
+    letter-spacing: 0.5px;
+    min-height: 44px;
+    touch-action: manipulation;
+  }
+
+  .modal-btn.yes  { border-color: #0f0; color: #0f0; }
+  .modal-btn.yes:active  { background: #0f0; color: #000; }
+  .modal-btn.no   { border-color: #f00; color: #f00; }
+  .modal-btn.no:active   { background: #f00; color: #fff; }
+  .modal-btn.undo { border-color: #f0f; color: #f0f; }
+  .modal-btn.undo:active { background: #f0f; color: #000; }
+
+  .blink { animation: blink 1s step-end infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+</style>
+</head>
+<body>
+<div class="scanlines"></div>
+
+<div class="ticker">
+  <span class="ticker-inner">★ INSERT COIN TO CONTINUE ★ SUMMER ARCADE CHALLENGE ★ 15 MISSIONS ★ HIGH SCORE: YOU ★ INSERT COIN TO CONTINUE ★ SUMMER ARCADE CHALLENGE ★ 15 MISSIONS ★ HIGH SCORE: YOU ★&nbsp;&nbsp;&nbsp;</span>
+</div>
+
+<div class="header">
+  <div class="header-title">☆ SUMMER ARCADE<br>CHALLENGE ☆</div>
+  <div class="header-sub">COMPLETE 15 LEGENDARY MISSIONS</div>
+  <div class="progress-bar-wrap">
+    <div class="progress-label">
+      <span>MISSIONS COMPLETE</span>
+      <span id="prog-count">0 / 15</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="prog-fill" style="width:0%"></div>
+    </div>
+  </div>
+</div>
+
+<div class="grid" id="game-grid"></div>
+
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <span class="modal-game-name" id="modal-game-name"></span>
+    <h2 id="modal-heading"></h2>
+    <p id="modal-body"></p>
+    <div class="modal-btns" id="modal-btns"></div>
+  </div>
+</div>
+
+<script>
+const GAMES = [
+  { id:1,  title:"Pac-Man",         year:1980, mission:"Complete 3 full levels (boards) without using a continue", icon:"pac" },
+  { id:2,  title:"Donkey Kong",     year:1981, mission:"Rescue Pauline on the first two stages (Construction and Rivet)", icon:"dk" },
+  { id:3,  title:"BurgerTime",      year:1982, mission:"Complete the third board by making all 6 burgers", icon:"burger" },
+  { id:4,  title:"Galaga",          year:1981, mission:"Survive to Stage 10 and achieve a hit ratio above 50%", icon:"galaga" },
+  { id:5,  title:"Frogger",         year:1981, mission:"Get all 5 frogs safely home to fill the lily pads on one board", icon:"frogger" },
+  { id:6,  title:"Centipede",       year:1980, mission:"Clear the mushroom field and defeat the centipede on 3 consecutive waves", icon:"centipede" },
+  { id:7,  title:"Asteroids",       year:1979, mission:"Reach 10,000 points in a single life", icon:"asteroids" },
+  { id:8,  title:"Q*bert",          year:1982, mission:"Complete the first two pyramids (discs 1 and 2) in one game", icon:"qbert" },
+  { id:9,  title:"Zaxxon",          year:1982, mission:"Breach the first fortress and destroy the Zaxxon robot at the end", icon:"zaxxon" },
+  { id:10, title:"Dig Dug",         year:1982, mission:"Clear an entire stage by inflating or dropping rocks on every enemy", icon:"digdug" },
+  { id:11, title:"Street Fighter II", year:1991, mission:"Beat Arcade mode on Normal difficulty with any character", icon:"sf2" },
+  { id:12, title:"Ms. Pac-Man",     year:1981, mission:"See the first intermission cutscene (reach board 3) without losing a life", icon:"mspacman" },
+  { id:13, title:"Tapper",          year:1983, mission:"Clear all 4 bars in the first round without letting a customer reach the end", icon:"tapper" },
+  { id:14, title:"Track & Field",   year:1983, mission:"Medal (top 3) in the 100m dash, long jump, AND javelin in a single game", icon:"trackfield" },
+  { id:15, title:"Mortal Kombat II",year:1993, mission:"Perform a Fatality finish on any opponent in a real match", icon:"mk2" }
+];
+
+function drawMarqueeArt(icon) {
+  const arts = {
+    pac:`<svg viewBox="0 0 290 110" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+      <rect width="290" height="110" fill="#00008B" opacity="0.5"/>
+      <text x="145" y="34" font-family="monospace" font-weight="bold" font-size="24" fill="#FFD700" text-anchor="middle" letter-spacing="4">PAC-MAN</text>
+      <circle cx="75" cy="78" r="22" fill="#FFD700"/>
+      <polygon points="75,78 97,67 97,89" fill="#000"/>
+      <circle cx="79" cy="68" r="3" fill="#000"/>
+      <circle cx="135" cy="78" r="10" fill="#FFB0FF" stroke="#FF69B4" stroke-width="1.5"/>
+      <circle cx="168" cy="78" r="10" fill="#00BFFF" stroke="#1E90FF" stroke-width="1.5"/>
+      <circle cx="201" cy="78" r="10" fill="#FF6347" stroke="#FF4500" stroke-width="1.5"/>
+      <circle cx="234" cy="78" r="10" fill="#FFD700" stroke="#FFA500" stroke-width="1.5"/>
+      <path d="M127 87 Q135 94 143 87" fill="#FFB0FF"/>
+      <path d="M160 87 Q168 94 176 87" fill="#00BFFF"/>
+      <path d="M193 87 Q201 94 209 87" fill="#FF6347"/>
+      <path d="M226 87 Q234 94 242 87" fill="#FFD700"/>
+      <circle cx="133" cy="74" r="2.5" fill="#000"/>
+      <circle cx="166" cy="74" r="2.5" fill="#000"/>
+      <circle cx="199" cy="74" r="2.5" fill="#000"/>
+      <circle cx="232" cy="74" r="2.5" fill="#000"/>
+      <circle cx="25" cy="78" r="5" fill="#fff" opacity="0.9"/>
+      <circle cx="46" cy="78" r="5" fill="#fff" opacity="0.9"/>
+    </svg>`,
+
+    dk:`<svg viewBox="0 0 290 110" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+      <rect width="290" height="110" fill="#8B0000" opacity="0.6"/>
+      <text x="145" y="28" font-family="monospace" font-weight="bold" font-size="18" fill="#FF4444" text-anchor="middle" letter-spacing="2">DONKEY KONG</text>
+      <rect x="30" y="42" width="230" height="9" fill="#8B4513" rx="3"/>
+      <rect x="30" y="70" width="230" height="9" fill="#8B4513" rx="3"/>
+      <ellipse cx="200" cy="57" rx="24" ry="22" fill="#4a2a0a"/>
+      <circle cx="200" cy="48" r="15" fill="#5c3a14"/>
+      <circle cx="192" cy="44" r="5" fill="#f5cba7"/>
+      <circle cx="208" cy="44" r="5" fill="#f5cba7"/>
+      <circle cx="192" cy="44" r="2.5" fill="#000"/>
+      <circle cx="208" cy="44" r="2.5" fill="#000"/>
+      <ellipse cx="200" cy="51" rx="7" ry="5" fill="#f5cba7"/>
+      <rect x="176" y="65" width="14" height="8" fill="#8B4513" rx="2"/>
+      <circle cx="90" cy="52" r="10" fill="#FF0000"/>
+      <rect x="83" y="60" width="14" height="13" fill="#0000CC"/>
+      <rect x="83" y="73" width="6" height="9" fill="#4444FF"/>
+      <rect x="91" y="73" width="6" height="9" fill="#4444FF"/>
+      <rect x="77" y="58" width="8" height="6" fill="#FF0000"/>
+      <rect x="97" y="58" width="8" height="6" fill="#FF0000"/>
+    </svg>`,
+
+    burger:`<svg viewBox="0 0 290 110" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+      <rect width="290" height="110" fill="#FF6600" opacity="0.3"/>
+      <text x="145" y="26" font-family="monospace" font-weight="bold" font-size="18" fill="#FF6600" text-anchor="middle" letter-spacing="2">BURGERTIME</text>
+      <rect x="55" y="36" width="180" height="15" rx="7" fill="#CD853F"/>
+      <rect x="60" y="51" width="170" height="9" fill="#228B22"/>
+      <rect x="63" y="60" width="164" height="9" fill="#CC0000"/>
+      <rect x="65" y="69" width="160" height="9" fill="#DAA520"/>
+      <rect x="60" y="78" width="170" height="14" rx="6" fill="#CD853F"/>
+      <circle cx="30" cy="68" r="16" fill="#FFF" stroke="#FF6600" stroke-width="2"/>
+      <text x="30" y="73" font-family="monospace" font-weight="bold" font-size="12" fill="#FF6600" text-anchor="middle">P</text>
+      <circle cx="262" cy="45" r="9" fill="#FF4444"/>
+      <circle cx="262" cy="72" r="9" fill="#FF4444"/>
+      <circle cx="250" cy="57" r="7" fill="#FF6666"/>
+    </svg>`,
+
+    galaga:`<svg viewBox="0 0 290 110" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+      <rect width="290" height="110" fill="#000010"/>
+      <circle cx="40" cy="20" r="1.5" fill="#fff" opacity="0.8"/>
+      <circle cx="80" cy="10" r="1" fill="#fff" opacity="0.6"/>
+      <circle cx="140" cy="25" r="2" fill="#fff" opacity="0.7"/>
+      <circle cx="210" cy="15" r="1.5" fill="#fff" opacity="0.9"/>
+      <circle cx="260" cy="30" r="1" fill="#fff" opacity="0.5"/>
+      <circle cx="20" cy="70" r="1" fill="#fff" opacity="0.4"/>
+      <circle cx="270" cy="80" r="1.5" fill="#fff" opacity="0.7"/>
+      <text x="145" y="30" font-family="monospace" font-weight="bold" font-size="24" fill="#0099FF" text-anchor="middle" letter-spacing="4">GALAGA</text>
+      <polygon points="145,96 124,58 166,58" fill="#FF0" stroke="#FFA500" stroke-width="1.5"/>
+      <rect x="136" y="58" width="18" height="7" fill="#FFA500"/>
+      <rect x="124" y="64" width="14" height="6" fill="#FF6600"/>
+      <rect x="152" y="64" width="14" height="6" fill="#FF6600"/>
+      <ellipse cx="68" cy="78" rx="16" ry="11" fill="#4400AA" stroke="#8800FF" stroke-width="1.5"/>
+      <ellipse cx="68" cy="74" rx="9" ry="7" fill="#6600CC"/>
+      <rect x="60" y="85" width="5" height="8" fill="#4400AA"/>
+      <rect x="71" y="85" width="5" height="8" fill="#4400AA"/>
+      <ellipse cx="222" cy="78" rx="16" ry="11" fill="#AA0044" stroke="#FF0066" stroke-width="1.5"/>
+      <ellipse cx="222" cy="74" rx="9" ry="7" fill="#CC0055"/>
+      <rect x="214" y="85" width="5" height="8" fill="#AA0044"/>
+      <rect x="225" y="85" width="5" height="8" fill="#AA0044"/>
+      <line x1="145" y1="96" x2="145" y2="108" stroke="#FF0" stroke-width="2"/>
+    </svg>`,
+
+    frogger:`<svg viewBox="0 0 290 110" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+      <rect width="290" height="110" fill="#000"/>
+      <rect x="0" y="45" width="290" height="22" fill="#1a1a00"/>
+      <rect x="0" y="67" width="290" height="22" fill="#003300"/>
+      <rect x="0" y="89" width="290" height="21" fill="#1a1a00"/>
+      <text x="145" y="30" font-family="monospace" font-weight="bold" font-size="22" fill="#00FF00" text-anchor="middle" letter-spacing="3">FROGGER</text>
+      <rect x="10" y="48" width="72" height="16" rx="7" fill="#4a3000"/>
+      <rect x="112" y="48" width="72" height="16" rx="7" fill="#5a3500"/>
+      <rect x="212" y="48" width="70" height="16" rx="7" fill="#4a3000"/>
+      <rect x="20" y="70" width="55" height="15" rx="3" fill="#CC0000" opacity="0.8"/>
+      <rect x="140" y="70" width="85" height="15" rx="3" fill="#FFCC00" opacity="0.8"/>
+      <ellipse cx="145" cy="100" rx="13" ry="9" fill="#00AA00"/>
+      <circle cx="140" cy="95" r="4" fill="#00AA00"/>
+      <circle cx="150" cy="95" r="4" fill="#00AA00"/>
+      <circle cx="139" cy="94" r="2.5" fill="#FFFF00"/>
+      <circle cx="151" cy="94" r="2.5" fill="#FFFF00"/>
+      <rect x="137" y="105" width="6" height="6" fill="#00AA00" rx="2"/>
+      <rect x="147" y="105" width="6" height="6" fill="#00AA00" rx="2"/>
+    </svg>`,
+
+    centipede:`<svg viewBox="0 0 290 110" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+      <rect width="290" height="110" fill="#000"/>
+      <text x="145" y="28" font-family="monospace" font-weight="bold" font-size="15" fill="#00FF88" text-anchor="middle" letter-spacing="2">CENTIPEDE</text>
+      <circle cx="38" cy="70" r="11" fill="#00CC44" stroke="#00FF88" stroke-width="1.5"/>
+      <circle cx="60" cy="64" r="11" fill="#00CC44" stroke="#00FF88" stroke-width="1.5"/>
+      <circle cx="82" cy="60" r="11" fill="#00CC44" stroke="#00FF88" stroke-width="1.5"/>
+      <circle cx="104" cy="60" r="11" fill="#00CC44" stroke="#00FF88" stroke-width="1.5"/>
+      <circle cx="126" cy="64" r="11" fill="#00CC44" stroke="#00FF88" stroke-width="1.5"/>
+      <circle cx="148" cy="70" r="11" fill="#00CC44" stroke="#00FF88" stroke-width="1.5"/>
+      <circle cx="170" cy="75" r="11" fill="#00CC44" stroke="#00FF88" stroke-width="1.5"/>
+      <circle cx="192" cy="70" r="11" fill="#00CC44" stroke="#00FF88" stroke-width="1.5"/>
+      <circle cx="216" cy="64" r="13" fill="#006622" stroke="#00FF88" stroke-width="2"/>
+      <circle cx="210" cy="59" r="3.5" fill="#FF0"/>
+      <circle cx="222" cy="59" r="3.5" fill="#FF0"/>
+      <line x1="207" y1="57" x2="200" y2="50" stroke="#00FF88" stroke-width="1.5"/>
+      <line x1="225" y1="57" x2="232" y2="50" stroke="#00FF88" stroke-width="1.5"/>
+      <rect x="248" y="42" width="15" height="15" rx="3" fill="#008800" opacity="0.7"/>
+      <rect x="265" y="60" width="15" height="15" rx="3" fill="#008800" opacity="0.7"/>
+      <rect x="255" y="78" width="15" height="15" rx="3" fill="#008800" opacity="0.7"/>
+      <line x1="145" y1="90" x2="145" y2="107" stroke="#FF4444" stroke-width="2"/>
+      <polygon points="145,107 140,97 150,97" fill="#FF4444"/>
+    </svg>`,
+
+    asteroids:`<svg viewBox="0 0 290 110" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+      <rect width="290" height="110" fill="#000"/>
+      <circle cx="20" cy="18" r="1" fill="#fff" opacity="0.6"/>
+      <circle cx="60" cy="32" r="1.5" fill="#fff" opacity="0.8"/>
+      <circle cx="110" cy="12" r="1" fill="#fff"/>
+      <circle cx="180" cy="26" r="1" fill="#fff" opacity="0.7"/>
+      <circle cx="240" cy="14" r="1.5" fill="#fff" opacity="0.9"/>
+      <circle cx="275" cy="38" r="1" fill="#fff" opacity="0.5"/>
+      <circle cx="50" cy="80" r="1" fill="#fff" opacity="0.6"/>
+      <circle cx="250" cy="85" r="1.5" fill="#fff"/>
+      <text x="145" y="28" font-family="monospace" font-weight="bold" font-size="18" fill="#fff" text-anchor="middle" letter-spacing="2">ASTEROIDS</text>
+      <polygon points="145,96 136,76 154,76" fill="none" stroke="#fff" stroke-width="2"/>
+      <line x1="145" y1="76" x2="145" y2="66" stroke="#fff" stroke-width="1.5"/>
+      <polygon points="58,72 36,88 80,88" fill="none" stroke="#aaa" stroke-width="2"/>
+      <polygon points="52,80 37,83 75,83 78,72 40,68" fill="none" stroke="#aaa" stroke-width="1.5"/>
+      <polygon points="228,64 200,78 256,78" fill="none" stroke="#aaa" stroke-width="2"/>
+      <polygon points="222,72 202,75 254,75 257,64 205,60" fill="none" stroke="#aaa" stroke-width="1.5"/>
+      <line x1="145" y1="65" x2="145" y2="48" stroke="#ff6" stroke-width="1.5" opacity="0.9"/>
+    </svg>`,
+
+    qbert:`<svg viewBox="0 0 290 110" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+      <rect width="290" height="110" fill="#220033"/>
+      <text x="145" y="26" font-family="monospace" font-weight="bold" font-size="22" fill="#FF4500" text-anchor="middle" letter-spacing="3">Q*BERT</text>
+      <polygon points="60,96 82,80 104,96" fill="#6633AA" stroke="#9955FF" stroke-width="1.5"/>
+      <polygon points="104,96 126,80 148,96" fill="#8844BB" stroke="#9955FF" stroke-width="1.5"/>
+      <polygon points="148,96 170,80 192,96" fill="#6633AA" stroke="#9955FF" stroke-width="1.5"/>
+      <polygon points="192,96 214,80 236,96" fill="#8844BB" stroke="#9955FF" stroke-width="1.5"/>
+      <polygon points="82,80 104,64 126,80" fill="#8844BB" stroke="#9955FF" stroke-width="1.5"/>
+      <polygon points="126,80 148,64 170,80" fill="#6633AA" stroke="#9955FF" stroke-width="1.5"/>
+      <polygon points="170,80 192,64 214,80" fill="#8844BB" stroke="#9955FF" stroke-width="1.5"/>
+      <polygon points="104,64 126,48 148,64" fill="#FF6600" stroke="#FF8800" stroke-width="1.5"/>
+      <polygon points="148,64 170,48 192,64" fill="#6633AA" stroke="#9955FF" stroke-width="1.5"/>
+      <polygon points="126,48 148,32 170,48" fill="#FF6600" stroke="#FF8800" stroke-width="1.5"/>
+      <circle cx="148" cy="24" r="10" fill="#FF4500"/>
+      <circle cx="144" cy="21" r="3" fill="#FFD700"/>
+      <ellipse cx="151" cy="28" rx="6" ry="3" fill="#FF6644"/>
+    </svg>`,
+
+    zaxxon:`<svg viewBox="0 0 290 110" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+      <rect width="290" height="110" fill="#000015"/>
+      <rect x="0" y="55" width="290" height="55" fill="#0a0a20" opacity="0.8"/>
+      <text x="145" y="28" font-family="monospace" font-weight="bold" font-size="22" fill="#00FFFF" text-anchor="middle" letter-spacing="4">ZAXXON</text>
+      <rect x="50" y="60" width="90" height="38" fill="#1a1a3a" stroke="#4444FF" stroke-width="1.5"/>
+      <rect x="72" y="52" width="46" height="22" fill="#2a2a5a" stroke="#6666FF" stroke-width="1"/>
+      <rect x="56" y="72" width="18" height="10" fill="#333" stroke="#444" stroke-width="1"/>
+      <rect x="106" y="72" width="18" height="10" fill="#333" stroke="#444" stroke-width="1"/>
+      <rect x="175" y="64" width="70" height="30" fill="#1a1a3a" stroke="#4444FF" stroke-width="1.5"/>
+      <rect x="188" y="56" width="44" height="20" fill="#2a2a5a" stroke="#6666FF" stroke-width="1"/>
+      <polygon points="215,38 203,60 227,60" fill="#CC0000" stroke="#FF0000" stroke-width="1.5"/>
+      <rect x="199" y="53" width="32" height="7" fill="#990000"/>
+      <line x1="200" y1="53" x2="188" y2="46" stroke="#FF0000" stroke-width="1.5"/>
+      <line x1="230" y1="53" x2="242" y2="46" stroke="#FF0000" stroke-width="1.5"/>
+      <line x1="215" y1="38" x2="215" y2="26" stroke="#FF6600" stroke-width="2"/>
+    </svg>`,
+
+    digdug:`<svg viewBox="0 0 290 110" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+      <rect width="290" height="110" fill="#1a0a00"/>
+      <rect x="0" y="38" width="290" height="72" fill="#5C3317" opacity="0.5"/>
+      <text x="145" y="30" font-family="monospace" font-weight="bold" font-size="20" fill="#FFD700" text-anchor="middle" letter-spacing="2">DIG DUG</text>
+      <path d="M20 50 Q85 58 145 50 Q185 44 220 58 Q250 68 280 60" fill="none" stroke="#C4A35A" stroke-width="12" opacity="0.4"/>
+      <circle cx="145" cy="82" r="16" fill="#fff"/>
+      <circle cx="145" cy="77" r="12" fill="#FF2222"/>
+      <rect x="137" y="85" width="7" height="13" fill="#fff"/>
+      <rect x="148" y="85" width="7" height="13" fill="#fff"/>
+      <ellipse cx="95" cy="74" rx="14" ry="12" fill="#4400CC"/>
+      <circle cx="95" cy="68" r="8" fill="#6600FF"/>
+      <circle cx="91" cy="65" r="2.5" fill="#fff"/>
+      <circle cx="99" cy="65" r="2.5" fill="#fff"/>
+      <ellipse cx="200" cy="80" rx="14" ry="12" fill="#CC4400"/>
+      <circle cx="200" cy="74" r="8" fill="#FF6600"/>
+      <circle cx="196" cy="71" r="2.5" fill="#fff"/>
+      <circle cx="204" cy="71" r="2.5" fill="#fff"/>
+    </svg>`,
+
+    sf2:`<svg viewBox="0 0 290 110" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+      <rect width="290" height="110" fill="#001a4a" opacity="0.9"/>
+      <text x="145" y="22" font-family="monospace" font-weight="bold" font-size="10" fill="#FFD700" text-anchor="middle" letter-spacing="1">STREET FIGHTER II</text>
+      <text x="145" y="36" font-family="monospace" font-weight="bold" font-size="9" fill="#FF4444" text-anchor="middle">THE WORLD WARRIOR</text>
+      <circle cx="88" cy="72" r="17" fill="#f5cba7"/>
+      <rect x="73" y="77" width="30" height="25" fill="#1565C0"/>
+      <rect x="61" y="84" width="16" height="7" fill="#f5cba7"/>
+      <rect x="103" y="84" width="16" height="7" fill="#f5cba7"/>
+      <circle cx="88" cy="66" r="10" fill="#8B4513"/>
+      <circle cx="202" cy="72" r="17" fill="#c8a07a"/>
+      <rect x="187" y="77" width="30" height="25" fill="#CC0000"/>
+      <rect x="175" y="82" width="16" height="7" fill="#c8a07a"/>
+      <rect x="217" y="82" width="16" height="7" fill="#c8a07a"/>
+      <rect x="185" y="60" width="5" height="24" fill="#8B4513"/>
+      <rect x="215" y="60" width="5" height="24" fill="#8B4513"/>
+      <line x1="105" y1="82" x2="185" y2="80" stroke="#FF0" stroke-width="2" opacity="0.5"/>
+      <line x1="105" y1="80" x2="128" y2="70" stroke="#FF0" stroke-width="3" opacity="0.8"/>
+      <circle cx="128" cy="69" r="6" fill="#FF6600" opacity="0.9"/>
+    </svg>`,
+
+    mspacman:`<svg viewBox="0 0 290 110" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+      <rect width="290" height="110" fill="#000"/>
+      <text x="145" y="26" font-family="monospace" font-weight="bold" font-size="15" fill="#FF69B4" text-anchor="middle" letter-spacing="1">MS. PAC-MAN</text>
+      <circle cx="90" cy="76" r="24" fill="#FFD700"/>
+      <polygon points="90,76 114,64 114,88" fill="#000"/>
+      <circle cx="95" cy="65" r="3.5" fill="#000"/>
+      <ellipse cx="82" cy="57" rx="7" ry="3.5" fill="#FF0066" transform="rotate(-20,82,57)"/>
+      <circle cx="75" cy="54" r="4" fill="#FF0066"/>
+      <circle cx="158" cy="76" r="12" fill="#FF69B4" stroke="#FF1493" stroke-width="1.5"/>
+      <circle cx="195" cy="73" r="12" fill="#00CED1" stroke="#008B8B" stroke-width="1.5"/>
+      <circle cx="232" cy="76" r="12" fill="#FF6347" stroke="#FF4500" stroke-width="1.5"/>
+      <path d="M148 86 Q158 94 168 86" fill="#FF69B4"/>
+      <path d="M185 83 Q195 91 205 83" fill="#00CED1"/>
+      <path d="M222 86 Q232 94 242 86" fill="#FF6347"/>
+      <circle cx="155" cy="71" r="2.5" fill="#000"/>
+      <circle cx="192" cy="68" r="2.5" fill="#000"/>
+      <circle cx="229" cy="71" r="2.5" fill="#000"/>
+      <circle cx="30" cy="76" r="6" fill="#fff" opacity="0.9"/>
+      <circle cx="52" cy="76" r="6" fill="#fff" opacity="0.9"/>
+    </svg>`,
+
+    tapper:`<svg viewBox="0 0 290 110" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+      <rect width="290" height="110" fill="#2a1000" opacity="0.9"/>
+      <rect x="0" y="65" width="290" height="45" fill="#1a0800" opacity="0.8"/>
+      <text x="145" y="26" font-family="monospace" font-weight="bold" font-size="22" fill="#DAA520" text-anchor="middle" letter-spacing="3">TAPPER</text>
+      <rect x="25" y="60" width="240" height="11" rx="4" fill="#8B4513" stroke="#5C2D0A" stroke-width="2"/>
+      <rect x="38" y="70" width="22" height="30" rx="3" fill="#DAA520" stroke="#B8860B" stroke-width="1.5"/>
+      <rect x="78" y="70" width="22" height="30" rx="3" fill="#DAA520" stroke="#B8860B" stroke-width="1.5"/>
+      <rect x="132" y="67" width="22" height="33" rx="3" fill="#DAA520" stroke="#B8860B" stroke-width="1.5"/>
+      <rect x="188" y="70" width="22" height="30" rx="3" fill="#DAA520" stroke="#B8860B" stroke-width="1.5"/>
+      <rect x="228" y="70" width="22" height="30" rx="3" fill="#DAA520" stroke="#B8860B" stroke-width="1.5"/>
+      <ellipse cx="49" cy="70" rx="12" ry="6" fill="#FFFDE7" opacity="0.9"/>
+      <ellipse cx="89" cy="70" rx="12" ry="6" fill="#FFFDE7" opacity="0.7"/>
+      <ellipse cx="143" cy="67" rx="12" ry="6" fill="#FFFDE7" opacity="0.95"/>
+      <circle cx="252" cy="46" r="13" fill="#f5cba7"/>
+      <rect x="244" y="57" width="16" height="16" fill="#CC0000"/>
+      <rect x="240" y="63" width="8" height="5" fill="#f5cba7"/>
+    </svg>`,
+
+    trackfield:`<svg viewBox="0 0 290 110" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+      <rect width="290" height="110" fill="#001A00"/>
+      <rect x="0" y="76" width="290" height="34" fill="#004400" opacity="0.7"/>
+      <text x="145" y="26" font-family="monospace" font-weight="bold" font-size="14" fill="#FFD700" text-anchor="middle" letter-spacing="1">TRACK &amp; FIELD</text>
+      <ellipse cx="38" cy="50" rx="17" ry="17" fill="none" stroke="#FFD700" stroke-width="3"/>
+      <ellipse cx="64" cy="50" rx="17" ry="17" fill="none" stroke="#C0C0C0" stroke-width="3"/>
+      <ellipse cx="90" cy="50" rx="17" ry="17" fill="none" stroke="#CD7F32" stroke-width="3"/>
+      <circle cx="158" cy="68" r="14" fill="#f5cba7"/>
+      <rect x="150" y="80" width="17" height="20" fill="#CC0000"/>
+      <line x1="167" y1="84" x2="190" y2="70" stroke="#f5cba7" stroke-width="4"/>
+      <circle cx="192" cy="68" r="7" fill="#8B8B00" stroke="#FFFF00" stroke-width="1.5"/>
+      <circle cx="238" cy="60" r="14" fill="#f5cba7"/>
+      <rect x="230" y="72" width="16" height="20" fill="#0000CC"/>
+      <line x1="230" y1="78" x2="214" y2="70" stroke="#f5cba7" stroke-width="4"/>
+      <rect x="282" y="44" width="8" height="56" fill="#888" rx="2"/>
+    </svg>`,
+
+    mk2:`<svg viewBox="0 0 290 110" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+      <rect width="290" height="110" fill="#0a0000"/>
+      <text x="145" y="22" font-family="monospace" font-weight="bold" font-size="12" fill="#CC0000" text-anchor="middle" letter-spacing="1">MORTAL KOMBAT</text>
+      <text x="145" y="40" font-family="monospace" font-weight="bold" font-size="20" fill="#FFD700" text-anchor="middle" letter-spacing="3">II</text>
+      <polygon points="145,58 128,90 162,90" fill="#CC0000" stroke="#FF0000" stroke-width="1.5"/>
+      <polygon points="145,52 139,62 151,62" fill="#FFD700"/>
+      <line x1="145" y1="90" x2="145" y2="107" stroke="#CC0000" stroke-width="2"/>
+      <circle cx="75" cy="78" r="15" fill="#f5cba7"/>
+      <rect x="67" y="92" width="16" height="14" fill="#004400"/>
+      <rect x="54" y="88" width="12" height="6" fill="#f5cba7"/>
+      <rect x="83" y="88" width="12" height="6" fill="#f5cba7"/>
+      <rect x="67" y="70" width="4" height="20" fill="#333"/>
+      <circle cx="215" cy="78" r="15" fill="#f5cba7"/>
+      <rect x="207" y="92" width="16" height="14" fill="#800000"/>
+      <rect x="195" y="86" width="12" height="6" fill="#f5cba7"/>
+      <rect x="223" y="86" width="12" height="6" fill="#f5cba7"/>
+      <rect x="209" y="63" width="9" height="27" fill="#4a2a00"/>
+      <text x="145" y="108" font-family="monospace" font-size="7" fill="#CC0000" text-anchor="middle">FINISH HIM!</text>
+    </svg>`
+  };
+  return arts[icon] || arts['pac'];
+}
+
+const STORAGE_KEY = 'arcade_challenge_v1';
+
+function loadState() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }
+  catch { return {}; }
+}
+
+function saveState(st) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(st)); } catch {}
+}
+
+let state = loadState();
+let pendingId = null;
+let pendingAction = null;
+
+function updateProgress() {
+  const done = Object.values(state).filter(v => v && v.done).length;
+  document.getElementById('prog-count').textContent = done + ' / 15';
+  document.getElementById('prog-fill').style.width = (done / 15 * 100) + '%';
+}
+
+function renderCard(game) {
+  const s = state[game.id] || {};
+  const isDone = !!s.done;
+  const card = document.createElement('div');
+  card.className = 'card' + (isDone ? ' done' : '');
+  card.id = 'card-' + game.id;
+  card.innerHTML = `
+    <div class="corner-tl"></div><div class="corner-tr"></div>
+    <div class="corner-bl"></div><div class="corner-br"></div>
+    <div class="card-header">
+      <span class="game-num">${String(game.id).padStart(2,'0')}</span>
+      <span class="game-title">${game.title}</span>
+      <span class="year-badge">${game.year}</span>
+    </div>
+    <div class="marquee-area">${drawMarqueeArt(game.icon)}</div>
+    <div class="mission-section">
+      <div class="mission-label">★ MISSION ★</div>
+      <div class="mission-text">${game.mission}</div>
+    </div>
+    <div class="card-footer">
+      <button class="complete-btn" data-id="${game.id}">${isDone ? '✓ UNDO' : '► COMPLETE'}</button>
+      <div class="done-stamp">
+        ${isDone ? `<span class="done-label blink">MISSION</span><span class="done-label">ACCOMPLISHED</span><span class="done-date">${s.date}</span>` : ''}
+      </div>
+    </div>
+  `;
+  return card;
+}
+
+function openModal(id, action) {
+  pendingId = id;
+  pendingAction = action;
+  const game = GAMES.find(g => g.id === id);
+  document.getElementById('modal-game-name').textContent = game.title;
+  const btns = document.getElementById('modal-btns');
+  if (action === 'complete') {
+    document.getElementById('modal-heading').textContent = 'MISSION ACCOMPLISHED?';
+    document.getElementById('modal-body').textContent = 'Mark "' + game.title + '" as complete?';
+    btns.innerHTML = `<button class="modal-btn yes" id="m-yes">► YES!</button><button class="modal-btn no" id="m-no">✕ NO</button>`;
+  } else {
+    document.getElementById('modal-heading').textContent = 'UNDO COMPLETION?';
+    document.getElementById('modal-body').textContent = 'Remove completion for "' + game.title + '"?';
+    btns.innerHTML = `<button class="modal-btn undo" id="m-yes">► UNDO</button><button class="modal-btn no" id="m-no">✕ CANCEL</button>`;
+  }
+  document.getElementById('modal').classList.add('show');
+  document.getElementById('m-yes').onclick = confirmAction;
+  document.getElementById('m-no').onclick = closeModal;
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('show');
+  pendingId = null; pendingAction = null;
+}
+
+function confirmAction() {
+  if (pendingAction === 'complete') {
+    const d = new Date();
+    state[pendingId] = { done: true, date: d.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}) };
+  } else {
+    delete state[pendingId];
+  }
+  saveState(state);
+  const game = GAMES.find(g => g.id === pendingId);
+  const grid = document.getElementById('game-grid');
+  const old = document.getElementById('card-' + pendingId);
+  grid.replaceChild(renderCard(game), old);
+  updateProgress();
+  closeModal();
+}
+
+document.getElementById('modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+function init() {
+  const grid = document.getElementById('game-grid');
+  GAMES.forEach(g => grid.appendChild(renderCard(g)));
+  grid.addEventListener('click', function(e) {
+    const btn = e.target.closest('.complete-btn');
+    if (!btn) return;
+    const id = parseInt(btn.dataset.id);
+    openModal(id, (state[id] && state[id].done) ? 'undo' : 'complete');
+  });
+  updateProgress();
+}
+
+init();
+</script>
+</body>
+</html>
